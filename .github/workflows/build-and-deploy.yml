@@ -13,12 +13,13 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    - name: Setup .NET 8 SDK
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 8.0.0-preview.7  # Use the specific preview version
+    - name: Install .NET SDK
+      run: |
+        curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0
+        echo "##[add-path]$HOME/.dotnet"
+        export PATH="$HOME/.dotnet:$PATH"
 
-    - name: Check .NET Version
+    - name: Check Installed .NET Version
       run: dotnet --version
 
     - name: Restore Dependencies
