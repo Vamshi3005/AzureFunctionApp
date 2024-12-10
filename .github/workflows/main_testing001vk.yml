@@ -35,8 +35,8 @@ jobs:
       - name: Azure Login with OIDC
         uses: azure/login@v1
         with:
-          client-id: <APP_REGISTRATION_CLIENT_ID> # App Registration Client ID
-          tenant-id: <TENANT_ID> # Azure Tenant ID
+          client-id: ${{ secrets.AZURE_CLIENT_ID }} # App Registration Client ID
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }} # Azure Tenant ID
           enable-oidc: true
 
       - name: Deploy to Azure Function App
