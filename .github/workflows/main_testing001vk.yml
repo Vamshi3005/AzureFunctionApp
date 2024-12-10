@@ -32,13 +32,13 @@ jobs:
           dotnet publish --configuration Release --output ./output
           popd
 
-      - name: Azure Login with OIDC
+      - name: Azure Login with Federated Identity
         uses: azure/login@v1
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }} # App Registration Client ID
           tenant-id: ${{ secrets.AZURE_TENANT_ID }} # Azure Tenant ID
-          audience: 'api://AzureADTokenExchange'
-          auth-type: 'OIDC'
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }} # Azure Subscription ID
+          auth-type: IDENTITY
 
       - name: Deploy to Azure Function App
         uses: Azure/functions-action@v1
