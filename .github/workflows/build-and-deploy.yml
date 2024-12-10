@@ -3,22 +3,22 @@ name: Build and Deploy Azure Function App
 on:
   push:
     branches:
-      - main  # Change this to your branch name if it's not 'main'
+      - main  # Adjust this if you're using a different branch
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout GitHub Action
+    - name: Checkout Code
       uses: actions/checkout@v3
 
-    - name: Setup .NET 8 Environment
+    - name: Setup .NET 8 Isolated
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 8.0.0  # Use the latest version of .NET 8
+        dotnet-version: 8.0.x  # Use the latest .NET 8 version
 
-    - name: Resolve Project Dependencies Using Dotnet
+    - name: Restore Dependencies
       run: dotnet restore
 
     - name: Build Project
@@ -27,7 +27,7 @@ jobs:
     - name: Publish Project
       run: dotnet publish --configuration Release -o published
 
-    - name: Deploy Azure Function App
+    - name: Deploy to Azure Function App
       uses: Azure/functions-action@v1
       with:
         app-name: testing001vk  # Replace with your Function App name
