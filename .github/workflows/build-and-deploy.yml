@@ -3,7 +3,7 @@ name: Build and Deploy Azure Function App
 on:
   push:
     branches:
-      - main  # Adjust this if you're using a different branch
+      - main
 
 jobs:
   build-and-deploy:
@@ -13,10 +13,13 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    - name: Setup .NET 8 Isolated
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 8.0.0  # Use the latest .NET 8 version
+    - name: Setup .NET 8 SDK
+      run: |
+        curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.0-preview.7
+        export PATH="$HOME/.dotnet:$PATH"
+
+    - name: Check .NET Version
+      run: dotnet --version
 
     - name: Restore Dependencies
       run: dotnet restore
@@ -30,6 +33,6 @@ jobs:
     - name: Deploy to Azure Function App
       uses: Azure/functions-action@v1
       with:
-        app-name: testing001vk  # Replace with your Function App name
+        app-name: testing001vk
         package: published
         publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
