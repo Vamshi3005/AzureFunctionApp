@@ -1,25 +1,31 @@
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using System.Net;
 using Microsoft.Identity.Client;
+using System.Threading.Tasks;
 
 namespace AzureFunctionApp
 {
-    public static class AuthFunction
+    public class AuthFunction
     {
-        private static string clientId = Environment.GetEnvironmentVariable("CLIENT_ID");
-        private static string tenantId = Environment.GetEnvironmentVariable("TENANT_ID");
-        private static string redirectUri = Environment.GetEnvironmentVariable("REDIRECT_URI");
+        private readonly ILogger _logger;
+        private static readonly string clientId = Environment.GetEnvironmentVariable("CLIENT_ID");
+        private static readonly string tenantId = Environment.GetEnvironmentVariable("TENANT_ID");
+        private static readonly string redirectUri = Environment.GetEnvironmentVariable("REDIRECT_URI");
 
-        [FunctionName("AuthFunction")]
-        public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
-            ILogger log)
+        public AuthFunction(ILoggerFactory loggerFactory)
         {
-            string[] scopes = new string[] { "https://graph.microsoft.com/.default" }; // Use app-only scopes
+            _logger = loggerFactory.CreateLogger<AuthFunction>();
+        }
+
+        [Function("AuthFunction")]
+        public async Task<HttpResponseData> Run(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req)
+        {
+            _logger.LogInformation("Processing request in AuthFunction...");
+
+            string[] scopes = new[] { "https://graph.microsoft.com/.default" };
             var pca = PublicClientApplicationBuilder
                 .Create(clientId)
                 .WithAuthority($"https://login.microsoftonline.com/{tenantId}")
@@ -28,14 +34,18 @@ namespace AzureFunctionApp
 
             try
             {
-                // Use AcquireTokenByAuthorizationCode or AcquireTokenForClient for server-side apps
                 var result = await pca.AcquireTokenForClient(scopes).ExecuteAsync();
-                return new OkObjectResult($"Access Token: {result.AccessToken}");
+
+                var response = req.CreateResponse(HttpStatusCode.OK);
+                await response.WriteStringAsync($"Access Token: {result.AccessToken}");
+                return response;
             }
             catch (MsalException ex)
             {
-                log.LogError($"Authentication error: {ex.Message}");
-                return new BadRequestObjectResult($"Authentication error: {ex.Message}");
+                _logger.LogError($"Authentication error: {ex.Message}");
+                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await errorResponse.WriteStringAsync($"Authentication error: {ex.Message}");
+                return errorResponse;
             }
         }
     }
