@@ -1,6 +1,7 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Client;
 using System.Threading.Tasks;
 
 namespace AzureFunctionApp
@@ -17,13 +18,29 @@ namespace AzureFunctionApp
             FunctionContext executionContext)
         {
             var logger = executionContext.GetLogger("AuthFunction");
-            logger.LogInformation("Processing a request.");
+            logger.LogInformation("AuthFunction triggered.");
 
-            var response = req.CreateResponse(System.Net.HttpStatusCode.OK);
-            response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
-            await response.WriteStringAsync("Hello from Azure Function!");
+            string[] scopes = new string[] { "User.Read" };
+            var pca = PublicClientApplicationBuilder
+                .Create(clientId)
+                .WithAuthority($"https://login.microsoftonline.com/{tenantId}")
+                .WithRedirectUri(redirectUri)
+                .Build();
 
-            return response;
+            try
+            {
+                var result = await pca.AcquireTokenInteractive(scopes).ExecuteAsync();
+                var response = req.CreateResponse(System.Net.HttpStatusCode.OK);
+                await response.WriteStringAsync($"Access Token: {result.AccessToken}");
+                return response;
+            }
+            catch (MsalException ex)
+            {
+                logger.LogError($"Authentication error: {ex.Message}");
+                var response = req.CreateResponse(System.Net.HttpStatusCode.BadRequest);
+                await response.WriteStringAsync($"Authentication error: {ex.Message}");
+                return response;
+            }
         }
     }
 }
