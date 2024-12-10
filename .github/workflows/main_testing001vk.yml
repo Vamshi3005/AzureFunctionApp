@@ -1,4 +1,4 @@
-name: Build and Deploy Azure Function App - testing001vk
+name: Build and deploy dotnet core project to Azure Function App - testing001vk
 
 on:
   push:
@@ -7,27 +7,24 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # Path to your Azure Function App project
-  DOTNET_VERSION: '8.0.x' # Correct version format for .NET SDK
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
+  DOTNET_VERSION: '8.0.x' # set this to the dotnet version to use
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@v4
 
-      # Step 2: Setup .NET SDK environment
-      - name: Setup DotNet Environment
+      - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }} # Use .NET 8 SDK
-          include-prerelease: true # Enable preview versions if needed
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          include-prerelease: true
 
-      # Step 3: Build the project
-      - name: Build and Publish Project
+      - name: 'Resolve Project Dependencies Using Dotnet'
         shell: bash
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
@@ -36,10 +33,10 @@ jobs:
           dotnet publish --configuration Release --output ./output
           popd
 
-      # Step 4: Deploy to Azure Function App
-      - name: Deploy to Azure Function App
+      - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         with:
-          app-name: 'testing001vk' # Your Function App name
-          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output' # Deployment package path
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }} # Publish profile secret
+          app-name: 'testing001vk'
+          slot-name: 'Production'
+          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_75B28786B55E45249CB4F917CBD56993 }}
