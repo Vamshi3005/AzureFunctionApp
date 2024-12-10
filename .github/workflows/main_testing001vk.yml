@@ -1,4 +1,4 @@
-name: Build and Deploy Azure Function App - testing001vk
+name: Deploy Azure Function App
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # Path to your web app project
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # Path to your Function App project
   DOTNET_VERSION: '8.0.x' # .NET version
 
 jobs:
@@ -15,15 +15,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Check out the repository
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      # Step 2: Set up .NET environment
       - name: Setup .NET Environment
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-          include-prerelease: true
 
+      # Step 3: Restore and build the project
       - name: Restore and Build .NET Project
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
@@ -32,16 +34,18 @@ jobs:
           dotnet publish --configuration Release --output ./output
           popd
 
+      # Step 4: Azure login with Managed Identity
       - name: Azure Login with Federated Credential
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: e3193b38-2f92-41c1-bab1-8ef159a37dbf # Replace with Managed Identity Principal ID
+          tenant-id: 418ddeda-4cb4-493f-881b-69cd97e34fa5 # Replace with your Azure Tenant ID
+          subscription-id: f96abca4-e8d0-4f40-a32b-c55605dbafb4 # Replace with your Azure Subscription ID
           auth-type: 'IDENTITY'
 
+      # Step 5: Deploy to Azure Function App
       - name: Deploy to Azure Function App
         uses: Azure/functions-action@v1
         with:
-          app-name: testing001vk
+          app-name: <Azure Function App Name> # Replace with your Function App name
           package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
