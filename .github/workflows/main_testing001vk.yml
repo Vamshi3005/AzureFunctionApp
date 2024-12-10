@@ -5,6 +5,10 @@ on:
     branches:
       - main
   workflow_dispatch:
+  
+permissions:
+  id-token: write # Required for federated credentials
+  contents: read # Allows actions/checkout to work
 
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # Path to your Function App project
