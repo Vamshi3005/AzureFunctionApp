@@ -15,16 +15,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 'Checkout GitHub Action'
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Setup DotNet Environment
+      - name: Setup .NET Environment
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           include-prerelease: true
 
-      - name: 'Resolve Project Dependencies Using Dotnet'
+      - name: Restore and Build .NET Project
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
           dotnet restore
@@ -32,13 +32,13 @@ jobs:
           dotnet publish --configuration Release --output ./output
           popd
 
-      - name: Azure Login with Federated Identity
+      - name: Azure Login with Federated Credential
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }} # App Registration Client ID
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }} # Azure Tenant ID
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }} # Azure Subscription ID
-          auth-type: IDENTITY
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          auth-type: 'IDENTITY'
 
       - name: Deploy to Azure Function App
         uses: Azure/functions-action@v1
