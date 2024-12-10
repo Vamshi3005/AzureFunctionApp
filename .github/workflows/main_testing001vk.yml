@@ -1,4 +1,4 @@
-name: Build and deploy dotnet core project to Azure Function App - testing001vk
+name: Build and Deploy Azure Function App - testing001vk
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
-  DOTNET_VERSION: '8.0.x' # set this to the dotnet version to use
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # Path to your web app project
+  DOTNET_VERSION: '8.0.x' # .NET version
 
 jobs:
   build-and-deploy:
@@ -16,16 +16,15 @@ jobs:
 
     steps:
       - name: 'Checkout GitHub Action'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+      - name: Setup DotNet Environment
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           include-prerelease: true
 
       - name: 'Resolve Project Dependencies Using Dotnet'
-        shell: bash
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
           dotnet restore
@@ -33,10 +32,15 @@ jobs:
           dotnet publish --configuration Release --output ./output
           popd
 
-      - name: 'Run Azure Functions Action'
+      - name: Azure Login with OIDC
+        uses: azure/login@v1
+        with:
+          client-id: <APP_REGISTRATION_CLIENT_ID> # App Registration Client ID
+          tenant-id: <TENANT_ID> # Azure Tenant ID
+          enable-oidc: true
+
+      - name: Deploy to Azure Function App
         uses: Azure/functions-action@v1
         with:
-          app-name: 'testing001vk'
-          slot-name: 'Production'
+          app-name: testing001vk
           package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_75B28786B55E45249CB4F917CBD56993 }}
