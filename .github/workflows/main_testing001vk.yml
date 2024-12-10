@@ -35,13 +35,27 @@ jobs:
           popd
 
       # Step 4: Azure login with Managed Identity
-      #- name: Azure Login with Federated Credential
-       # uses: azure/login@v1
-        #with:
-         # client-id: e3193b38-2f92-41c1-bab1-8ef159a37dbf # Replace with Managed Identity Principal ID
-          #tenant-id: 418ddeda-4cb4-493f-881b-69cd97e34fa5 # Replace with your Azure Tenant ID
-          #subscription-id: f96abca4-e8d0-4f40-a32b-c55605dbafb4 # Replace with your Azure Subscription ID
-          #auth-type: 'IDENTITY'
+      - name: Azure Login with Federated Credential
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }} # Replace with Managed Identity Principal ID
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }} # Replace with your Azure Tenant ID
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }} # R
+          enable-AZPSSession: true
+
+      - name: Azure CLI script
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az account show
+
+      - name: Azure PowerShell script
+        uses: azure/powershell@v2
+        with:
+          azPSVersion: "latest"
+          inlineScript: |
+            Get-AzContext
 
       # Step 5: Deploy to Azure Function App
       - name: Deploy to Azure Function App
