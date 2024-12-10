@@ -4,39 +4,36 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
-
-env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # Path to your Azure Function App project
-  DOTNET_VERSION: '8.0.x' # Correct version format for .NET SDK
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Step 2: Setup .NET SDK environment
-      - name: Setup .NET SDK
+      - name: Setup .NET 8 SDK
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }} # Use the corrected version format
-          include-prerelease: true # Enable preview versions if necessary
+          dotnet-version: '8.0.x'
+          include-prerelease: true
 
-      # Step 3: Install dependencies and build
-      - name: Build and Publish Project
-        run: |
-          dotnet restore ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          dotnet build ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }} --configuration Release
-          dotnet publish ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }} --configuration Release --output ./output
+      - name: Check Installed .NET Version
+        run: dotnet --version
 
-      # Step 4: Deploy to Azure Function App
+      - name: Restore Dependencies
+        run: dotnet restore
+
+      - name: Build Project
+        run: dotnet build --configuration Release
+
+      - name: Publish Project
+        run: dotnet publish --configuration Release -o published
+
       - name: Deploy to Azure Function App
         uses: Azure/functions-action@v1
         with:
-          app-name: 'testing001vk' # Your Function App name
-          package: './output' # Deployment package path
+          app-name: testing001vk
+          package: published
           publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
