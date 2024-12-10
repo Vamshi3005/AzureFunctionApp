@@ -37,7 +37,8 @@ jobs:
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }} # App Registration Client ID
           tenant-id: ${{ secrets.AZURE_TENANT_ID }} # Azure Tenant ID
-          enable-oidc: true
+          audience: 'api://AzureADTokenExchange'
+          auth-type: 'OIDC'
 
       - name: Deploy to Azure Function App
         uses: Azure/functions-action@v1
