@@ -16,8 +16,8 @@ jobs:
     - name: Install .NET SDK
       run: |
         curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0
-        echo "##[add-path]$HOME/.dotnet"
         export PATH="$HOME/.dotnet:$PATH"
+        echo "$HOME/.dotnet" >> $GITHUB_PATH
 
     - name: Check Installed .NET Version
       run: dotnet --version
