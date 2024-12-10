@@ -1,1 +1,1 @@
-# AzureFunctionApp
+# AzureFunctionApps
