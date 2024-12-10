@@ -13,10 +13,11 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    - name: Setup DotNet Environment
-      uses: actions/setup-dotnet@v1
+    - name: Setup .NET 8 SDK
+      uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '8.0.*' # Use the correct format expected by setup-dotnet
+        dotnet-version: '8.0.x' # Correct format for .NET 8
+        include-prerelease: true # Include preview versions if needed
 
     - name: Check Installed .NET Version
       run: dotnet --version
